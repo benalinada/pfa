@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
@@ -182,6 +184,9 @@ class CanvasSideBar extends HookWidget {
                     final bytes = await getBytes();
                     if (bytes != null) {
                       saveFile(bytes, 'png'); // Save as PNG by default
+
+                      // Enregistrez l'image dans Firebase Storage
+                      await uploadImageToFirebaseStorage(bytes, 'image.png');
                     }
                   },
                   tooltip: 'save',
@@ -194,26 +199,24 @@ class CanvasSideBar extends HookWidget {
     );
   }
 
-  void saveFile(Uint8List bytes, String extension) async {
-    if (kIsWeb) {
-      html.AnchorElement()
-        ..href = '${Uri.dataFromBytes(bytes, mimeType: 'image/$extension')}'
-        ..download =
-            'FlutterLetsDraw-${DateTime.now().toIso8601String()}.$extension'
-        ..style.display = 'none'
-        ..click();
-    } else {
-      await FileSaver.instance.saveFile(
-        name: 'FlutterLetsDraw-${DateTime.now().toIso8601String()}.$extension',
-        bytes: bytes,
-        ext: extension,
-        mimeType: extension == 'png' ? MimeType.png : MimeType.jpeg,
-      );
-    }
-
-
-
+Future<void> saveFile(Uint8List bytes, String extension) async {
+  if (kIsWeb) {
+    print("Le téléchargement direct vers Firebase Storage n'est pas pris en charge sur le web.");
+    return;
   }
+
+  try {
+    // Récupérer une référence au bucket Firebase Storage
+    final ref = firebase_storage.FirebaseStorage.instance.ref().child('images').child('image_$extension');
+
+    // Télécharger l'image vers Firebase Storage
+    await ref.putData(bytes);
+
+    print('Image téléchargée avec succès sur Firebase Storage.');
+  } catch (error) {
+    print('Erreur lors du téléchargement de l\'image sur Firebase Storage: $error');
+  }
+}
 
   Future<ui.Image> get _getImage async {
     final completer = Completer<ui.Image>();
@@ -380,5 +383,20 @@ class _UndoRedoStack {
 
   void dispose() {
     sketchesNotifier.removeListener(_sketchesCountListener);
+  }
+}
+
+// Fonction pour télécharger l'image vers Firebase Storage
+Future<void> uploadImageToFirebaseStorage(Uint8List imageData, String imageName) async {
+  try {
+    // Référence de votre espace de stockage Firebase
+    firebase_storage.Reference storageReference = firebase_storage.FirebaseStorage.instance.ref().child(imageName);
+
+    // Mettez le fichier dans le stockage Firebase
+    await storageReference.putData(imageData);
+
+    print('Image uploaded to Firebase Storage successfully');
+  } catch (e) {
+    print('Error uploading image to Firebase Storage: $e');
   }
 }

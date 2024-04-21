@@ -100,15 +100,8 @@ class DrawingPage extends HookWidget {
               ),
             ),
           ),
-          // Custom AppBar
-          Positioned(
-            top: 10,
-            left: 10,
-            child: _CustomAppBar(
-              animationController: animationController,
-              showAlert: showAlert,
-            ),
-          ),
+          
+          
         ],
       ),
     );
@@ -129,13 +122,7 @@ class _CustomAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: kToolbarHeight,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: ElevatedButton(
-          onPressed: showAlert,
-          child: Text('Show Alert'),
-        ),
-      ),
+    
     );
   }
 }

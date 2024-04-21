@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'dart:js';
+
 import 'dart:math' as math;
 import 'dart:math';
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 
@@ -49,50 +50,122 @@ class DrawingCanvas extends HookWidget {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-
-
-   
       cursor: SystemMouseCursors.precise,
       child: Stack(
         children: [
           buildAllSketches(context),
           buildCurrentPath(context),
           Positioned(
-          bottom: 16, // Positioning the button at the bottom of the screen
-          right: 16, // Positioning the button at the right of the screen
-          child: ElevatedButton(
-            onPressed: () => sendCoordinatesToServerOnClick(), // Call sendCoordinatesToServerOnClick() when the button is pressed
-            child: const Text('Show'), // Text displayed on the button
+            bottom: 16,
+            right: 16,
+            child: ElevatedButton(
+              onPressed: () => sendCoordinatesToServerOnClick(context),
+              child: const Text('Show'),
+            ),
           ),
-        ),
         ],
       ),
-
     );
-    
   }
-void sendCoordinatesToServerOnClick() {
-  List<double> xCoordinates = [];
-  List<double> yCoordinates = [];
 
-  // Récupérer les coordonnées de tous les points de l'image
-  for (final sketch in allSketches.value) {
-    for (final point in sketch.points) {
-      final x = point.dx;
-      final y = point.dy;
+  void sendCoordinatesToServerOnClick(BuildContext context) {
+    List<double> xCoordinates = [];
+    List<double> yCoordinates = [];
 
-      // Ajouter les coordonnées x et y aux tableaux respectifs
-      xCoordinates.add(x);
-      yCoordinates.add(y);
+    // Récupérer les coordonnées de tous les points de l'image
+    for (final sketch in allSketches.value) {
+      for (final point in sketch.points) {
+        final x = point.dx;
+        final y = point.dy;
+
+        // Ajouter les coordonnées x et y aux tableaux respectifs
+        xCoordinates.add(x);
+        yCoordinates.add(y);
+      }
     }
+   print(xCoordinates);
+    print(yCoordinates);
+    // Appel de la fonction pour obtenir les directions
+    // List<String> directions =
+    //     getDirections(xCoordinates.cast<int>(), yCoordinates.cast<int>());
+
+
+List<String> directions = detectDirection(xCoordinates.cast<int>(),yCoordinates.cast<int>());
+    
+       List<Map<String, dynamic>> resultat = compterMots(directions);
+        List<Arrow> arrows = [];
+
+            
+      String message = '';
+
+        List<Arrow> arrowsData = resultat.map((element) => Arrow(
+          size: element['compteur'],
+          direction: element['mot'],
+        )).toList();
+
+
+        resultat.forEach((element) {
+          message += '${element['compteur']} ${element['mot']}, ';
+      
+        });
+
+        arrowsData.forEach((arrow) {
+  print("Size: ${arrow.size}, Direction: ${arrow.direction}");
+});
+      String message2 = ArrowMessageGenerator(arrowsData);
+    // Afficher les directions dans un dialogue
+    print(message2);
+  showArrowDialog(context, arrowsData ,  message2 );
   }
- print(xCoordinates);
- print(yCoordinates);
- 
-getDirections(xCoordinates.cast<int>(), yCoordinates.cast<int>());
 
+static String ArrowMessageGenerator(List<Arrow> arrowsData) {
+  // Suppression des flèches avec une taille inférieure à 5
+  arrowsData.removeWhere((arrow) => arrow.size < 5);
 
- 
+  String message = 'First, ';
+
+  for (var i = 0; i < arrowsData.length; i++) {
+    var arrow = arrowsData[i];
+
+    // Diviser la taille par 4
+    int dividedSize = arrow.size ~/ 4;
+
+    // Transformation des directions selon les spécifications
+    String transformedDirection = '';
+    switch (arrow.direction.toLowerCase()) {
+      case 'haut':
+        transformedDirection = 'forward';
+        break;
+      case 'bas':
+        transformedDirection = 'backward';
+        break;
+      case 'gauche':
+        transformedDirection = 'left';
+        break;
+      case 'droit':
+        transformedDirection = 'right';
+        break;
+      default:
+        transformedDirection = arrow.direction; // Utilise la direction d'origine si elle ne correspond pas aux cas ci-dessus
+    }
+
+    // Construction du message en fonction de la direction et de la taille
+    if (i > 0) {
+      if (i == arrowsData.length - 1) {
+        // Ajouter "and finally" avant le dernier élément
+        message += 'and finally ';
+      } else {
+        message += ', then ';
+      }
+    }
+    message += 'take $dividedSize steps to the $transformedDirection';
+  }
+
+  // Ajout de la ponctuation appropriée
+  message += '.';
+
+  // Retourne le message final
+  return message;
 }
 
   void onPointerDown(PointerDownEvent details, BuildContext context) {
@@ -119,7 +192,6 @@ getDirections(xCoordinates.cast<int>(), yCoordinates.cast<int>());
     final offset = box.globalToLocal(details.position);
     final points = List<Offset>.from(currentSketch.value?.points ?? [])
       ..add(offset);
-  
 
     currentSketch.value = Sketch.fromDrawingMode(
       Sketch(
@@ -141,28 +213,7 @@ getDirections(xCoordinates.cast<int>(), yCoordinates.cast<int>());
     allSketches.value = List<Sketch>.from(allSketches.value)
       ..add(currentSketch.value!);
 
-  List<double> xCoordinates = [];
-  List<double> yCoordinates = [];
-
-  // Récupérer les coordonnées de tous les points de l'image
-  for (final sketch in allSketches.value) {
-    for (final point in sketch.points) {
-      final x = point.dx;
-      final y = point.dy;
-
-      // Ajouter les coordonnées x et y aux tableaux respectifs
-      xCoordinates.add(x);
-      yCoordinates.add(y);
-    }
-  }
-
-  // Afficher les tableaux des coordonnées x et y dans la console
-  print('Coordonnées x : $xCoordinates');
-  print('Coordonnées y : $yCoordinates');
-
-
-  // Afficher les coordonnées dans la console
-
+    // Réinitialiser le dessin actuel
     currentSketch.value = Sketch.fromDrawingMode(
       Sketch(
         points: [],
@@ -179,16 +230,7 @@ getDirections(xCoordinates.cast<int>(), yCoordinates.cast<int>());
     );
   }
 
-
-
- 
-
-
-
-
-
-
-Widget buildAllSketches(BuildContext context) {
+  Widget buildAllSketches(BuildContext context) {
     return SizedBox(
       height: height,
       width: width,
@@ -219,8 +261,7 @@ Widget buildAllSketches(BuildContext context) {
       onPointerDown: (details) => onPointerDown(details, context),
       onPointerMove: (details) => onPointerMove(details, context),
       onPointerUp: onPointerUp,
-
-      child: ValueListenableBuilder(
+      child: ValueListenableBuilder<Sketch?>(
         valueListenable: currentSketch,
         builder: (context, sketch, child) {
           return RepaintBoundary(
@@ -229,7 +270,9 @@ Widget buildAllSketches(BuildContext context) {
               width: width,
               child: CustomPaint(
                 painter: SketchPainter(
-                  sketches: sketch == null ? [] : [sketch],
+                  sketches: sketch == null
+                      ? []
+                      : [sketch], // Utilisez [sketch] au lieu de []
                 ),
               ),
             ),
@@ -239,127 +282,320 @@ Widget buildAllSketches(BuildContext context) {
     );
   }
 
-
-// redrawing 
- List<String> getDirections(List<int> x, List<int> y) {
-    List<String> directions = [];
-    bool isVertical = isImageVertical(x, y);
-    List<List<int>> cleanedCoordinates = nettoyer(x, y);
-
-    List<int> cleanedX = cleanedCoordinates[0];
-    List<int> cleanedY = cleanedCoordinates[1];
-
-    List<List<int>> discretizedCoordinates =
-        descritisation(cleanedX, cleanedY, 10); // Specify your number of steps here
-
-    List<int> discretizedX = discretizedCoordinates[0];
-    List<int> discretizedY = discretizedCoordinates[1];
-
-    for (int i = 0; i < discretizedX.length - 1; i++) {
-      directions.add(directionLookup(discretizedX[i + 1], discretizedX[i],
-          discretizedY[i + 1], discretizedY[i]));
-    }
-
-    return directions;
-  }
-
-  bool isImageVertical(List<int> x, List<int> y) {
-    int maxX = x.reduce(max);
-    int maxY = y.reduce(max);
-    int minX = x.reduce(min);
-    int minY = y.reduce(min);
-
-    int width = maxX - minX;
-    int height = maxY - minY;
-
-    return (width - height) < 0;
-  }
-
-  List<List<int>> nettoyer(List<int> array1, List<int> array2) {
-    List<int> cleanedX = [array1[0]];
-    List<int> cleanedY = [array2[0]];
-    int threshold = 3;
-    int deb = array1[0];
-
-    for (int i = 0; i < array1.length; i++) {
-      if (array1[i] - deb > threshold) {
-        cleanedX.add(array1[i]);
-        cleanedY.add(array2[i]);
-        deb = array1[i];
-      }
-    }
-
-    return [cleanedX, cleanedY];
-  }
-
-  List<List<int>> descritisation(List<int> x, List<int> y, int nbPas) {
-    int p1 = x.length ~/ nbPas;
-    List<int> p = [0];
-    for (int i = p1; i < x.length; i += p1) {
-      p.add(i);
-    }
-
-    List<int> deletedPointsIndex = [];
-    for (int i in p) {
-      for (int j = 0; j < p1 - 1; j++) {
-        if (i + j < x.length) {
-          deletedPointsIndex.add(i + j);
+List<String> detectDirection(List<int> x, List<int> y) {
+    List<String> direction = [];
+    List<String> directiontest = [];
+    for (int i = 0; i < x.length - 1; i++) {
+      if (x[i + 1] == x[i]) {
+        if (y[i + 1] < y[i]) {
+          directiontest.add('Haut');
+        } else if (y[i + 1] > y[i]) {
+           directiontest.add('Bas');
         }
+      } else if (x[i + 1] > x[i]) {
+        if (y[i + 1] < y[i]) {
+           directiontest.add('Haut/droit');
+        } else if (y[i + 1] > y[i]) {
+           directiontest.add('Bas/droit');
+        }else if (y[i + 1] == y[i]) {
+           directiontest.add('droit');
+        }
+      } else if (x[i + 1] < x[i]) {
+
+        if (y[i + 1] < y[i]) {
+           directiontest.add('Haut/Gauche');
+        } else if (y[i + 1] < y[i]) {
+           directiontest.add('Bas/Gauche');
+        }else if (y[i + 1] == y[i]) {
+           directiontest.add('Gauche');
+        }
+
+     
+
       }
+
     }
 
-    List<int> new_x = List.from(x);
-    List<int> new_y = List.from(y);
+           print(directiontest);
+  direction = filtrerListe(directiontest);
 
-    for (int i in deletedPointsIndex.reversed) {
-      new_x.removeAt(i);
-      new_y.removeAt(i);
+    return direction;
+  }
+
+List<Map<String, dynamic>> compterMots(List<String> tableau) {
+  List<Map<String, dynamic>> mots = [];
+  int compteur = 1;
+
+  for (int i = 1; i < tableau.length; i++) {
+    if (tableau[i] == tableau[i - 1]) {
+      compteur++;
+    } else {
+      mots.add({'mot': tableau[i - 1], 'compteur': compteur});
+      compteur = 1;
     }
-
-    return [new_x, new_y];
   }
 
-  String directionLookup(
-      int destinationX, int originX, int destinationY, int originY) {
-    int deltaX = destinationX - originX;
-    int deltaY = destinationY - originY;
-    double degreesTemp = atan2(deltaX, deltaY) / pi * 180;
+  mots.add({'mot': tableau.last, 'compteur': compteur});
 
-    double degreesFinal = degreesTemp < 0 ? 360 + degreesTemp : degreesTemp;
-
-    List<String> compassBrackets = [
-      "DOWN",
-      "DOWN/RIGHT",
-      "RIGHT",
-      "UP/RIGHT",
-      "UP",
-      "UP/LEFT",
-      "LEFT",
-      "DOWN/LEFT",
-      "DOWN"
-    ];
-    int compassLookup = (degreesFinal / 45).round();
-    return compassBrackets[compassLookup];
-  }
+  return mots;
 }
 
 
 
+List<String> filtrerListe(List<String> liste) {
+  if (liste.length <= 2) {
+    return liste;
+  }
+
+  List<String> resultat = [liste[0]];
+
+  for (int i = 1; i < liste.length - 1; i++) {
+    if (liste[i] != liste[i - 1] && liste[i] != liste[i + 1]) {
+      continue;
+    }
+    resultat.add(liste[i]);
+  }
+
+  resultat.add(liste[liste.length - 1]);
+
+  return resultat;
+}
 
 
+ 
+void showArrowDialog(BuildContext context, List<Arrow> arrows, String direction) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Directions'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Ajouter un espace entre la description et les flèches
+            Wrap(
+              spacing: 8.0,
+              runSpacing: 8.0,
+              children: drawArrows(arrows),
+            ),
+            SizedBox(height: 16.0),
+            Text('Directions: $direction'), // Ajouter la description ici
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              String? selectedPatient = (await showPatientsListDialog(context ,arrows, direction)) as String?;
+                    if (selectedPatient != null) {
+                      print('Patient sélectionné: $selectedPatient');
+                    } else {
+                      print('Aucun patient sélectionné.');
+                    }
 
+              Navigator.of(context).pop(); 
+            },
+            child: Text('Send'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
+Future<List<String>?> showPatientsListDialog(BuildContext context , List<Arrow> arrows, String direction) async {
+  try {
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await FirebaseFirestore.instance.collection('patient').get();
 
+    List<String> patients = [];
+    querySnapshot.docs.forEach((doc) {
+      patients.add(doc.data()['name']);
+    });
 
+    List<String> selectedPatients = [];
 
+    return showDialog<List<String>>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, setState) {
+            return AlertDialog(
+              title: Text('Sélectionnez des patients'),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: patients.map((String patient) {
+                    bool isSelected = selectedPatients.contains(patient);
+                    return CheckboxListTile(
+                      title: Text(patient),
+                      value: isSelected,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value != null) {
+                            if (value) {
+                              selectedPatients.add(patient);
+                            } else {
+                              selectedPatients.remove(patient);
+                            }
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+             actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    // Sauvegarder les données dans Firebase
+                    saveData(arrows, direction);
+                     ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Données sauvegardées avec succès'),
+                      ),
+                    );
+                    Navigator.pop(context);
+                  },
+                  child: Text('Save'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  } catch (e) {
+    print('Error fetching patients: $e');
+    return null;
+  }
+}
+List<Widget> drawArrows(List<Arrow> arrows) {
+ 
+  List<Widget> widgets = [];
 
+  for (Arrow arrow in arrows) {
+    switch (arrow.direction.toLowerCase()) {
+      case 'haut':
+        widgets.add(
+          Icon(Icons.arrow_upward, size: arrow.size),
+        );
+        break;
+      case 'bas':
+        widgets.add(
+          Icon(Icons.arrow_downward, size: arrow.size),
+        );
+        break;
+      case 'gauche':
+        widgets.add(
+          Icon(Icons.arrow_back, size: arrow.size),
+        );
+        break;
+      case 'droit':
+        widgets.add(
+          Icon(Icons.arrow_forward, size: arrow.size),
+        );
+        break;
+      case 'haut/droit':
+        widgets.add(
+          Icon(Icons.arrow_forward, size: arrow.size),
+        );
+        widgets.add(
+          Transform.rotate(
+            angle: math.pi / 4,
+            child: Icon(Icons.arrow_forward, size: arrow.size),
+          ),
+        );
+        break;
+      case 'haut/gauche':
+        widgets.add(
+          Icon(Icons.arrow_back, size: arrow.size),
+        );
+        widgets.add(
+          Transform.rotate(
+            angle: math.pi / 4,
+            child: Icon(Icons.arrow_back, size: arrow.size),
+          ),
+        );
+        break;
+      case 'bas/droit':
+        widgets.add(
+          Icon(Icons.arrow_forward, size: arrow.size),
+        );
+        widgets.add(
+          Transform.rotate(
+            angle: math.pi / 4,
+            child: Icon(Icons.arrow_forward, size: arrow.size),
+          ),
+        );
+        break;
+      case 'bas/gauche':
+        widgets.add(
+          Icon(Icons.arrow_back, size: arrow.size),
+        );
+        widgets.add(
+          Transform.rotate(
+            angle: math.pi / 4,
+            child: Icon(Icons.arrow_back, size: arrow.size),
+          ),
+        );
+        break;
+      default:
+        break;
+    }
+  }
 
+  return widgets;
+}
 
+Future<void> saveData(List<Arrow> arrows, String direction ) async {
+  try {
+    // Initialisez une instance de Firestore
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
+    // Ajoutez les données dans la collection "arrows"
+    await firestore.collection('arrows').add({
+      'direction': direction,
+      'arrows': arrows.map((arrow) => {
+        'size': arrow.size,
+        'direction': arrow.direction,
+      }).toList(),
+    });
 
+    print('Data saved to Firestore successfully');
+  } catch (e) {
+    print('Error saving data to Firestore: $e');
+  }
+}
 
+}
 
+void showSuccessMessage(BuildContext context) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Data saved successfully'),
+      duration: Duration(seconds: 2), // Durée pendant laquelle le SnackBar est affiché
+    ),
+  );
+}
 
+class Arrow {
+  final double size;
+  final String direction;
+
+  Arrow({required this.size, required this.direction});
+}
 class SketchPainter extends CustomPainter {
   final List<Sketch> sketches;
   final Image? backgroundImage;

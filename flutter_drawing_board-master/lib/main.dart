@@ -1,29 +1,67 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_drawing_board/config/route.dart';
-import 'package:flutter_drawing_board/theme/theme.dart';
+import 'package:flutter_drawing_board/globals.dart';
+import 'package:flutter_drawing_board/screens/doctor/main_page_doctor.dart';
+import 'package:flutter_drawing_board/screens/doctor_or_patient.dart';
+import 'package:flutter_drawing_board/screens/firebase_auth.dart';
+import 'package:flutter_drawing_board/screens/my_profile.dart';
+import 'package:flutter_drawing_board/screens/patient/appointments.dart';
+import 'package:flutter_drawing_board/screens/patient/doctor_profile.dart';
+import 'package:flutter_drawing_board/screens/patient/main_page_patient.dart';
+import 'package:flutter_drawing_board/screens/sign_in.dart';
 
+import 'firebase_options.dart';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase for all platforms(android, ios, web)
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-void main() {
   runApp(const MyApp());
 }
+const Color kCanvasColor = Color.fromARGB(255, 177, 194, 229);
 
-const Color kCanvasColor = Color.fromARGB(255, 239, 240, 242);
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
-   Widget build(BuildContext context) {
-    return MaterialApp(
-       debugShowCheckedModeBanner: false,
-      title: 'Health Care App',
-      theme: AppTheme.lightTheme,
-      routes: Routes.getRoute(),
-        onGenerateRoute: (settings) => Routes.onGenerateRoute(settings),
-     
-    );
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  User? user;
+
+  Future<void> _getUser() async {
+    user = _auth.currentUser!;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    _getUser();
+    return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => user == null
+            ? const SignIn()
+            : const DoctorOrPatient(),
+        '/login': (context) => const FireBaseAuth(),
+        '/home': (context) =>
+            isDoctor ? const MainPageDoctor() : const MainPagePatient(),
+        '/profile': (context) => const MyProfile(),
+        '/MyAppointments': (context) => const Appointments(),
+        '/DoctorProfile': (context) => DoctorProfile(),
+      },
+      theme: ThemeData(brightness: Brightness.light),
+      debugShowCheckedModeBanner: false,
+      // home: MainPageDoctor(),
+      // home: ChatRoom(
+      //   userId: '1234',
+      // ),
+    );
+  }
 }

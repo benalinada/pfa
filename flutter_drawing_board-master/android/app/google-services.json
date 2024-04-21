@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "623606238522",
+    "firebase_url": "https://drawingpath-c6aad-default-rtdb.firebaseio.com",
+    "project_id": "drawingpath-c6aad",
+    "storage_bucket": "drawingpath-c6aad.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623606238522:android:3f35f5deb4ac12f8f99403",
+        "android_client_info": {
+          "package_name": "com.jideguru.flutter_drawing_board"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAa4l6j03Mw-jiVki_mgX8rHMEpsk9pGY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
