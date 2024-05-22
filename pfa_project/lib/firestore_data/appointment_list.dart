@@ -136,7 +136,7 @@ class _AppointmentListState extends State<AppointmentList> {
           return snapshot.data!.size == 0
               ? Center(
                   child: Text(
-                    'No Appointment Scheduled',
+                    'Exercice',
                     style: GoogleFonts.lato(
                       color: Colors.grey,
                       fontSize: 18,

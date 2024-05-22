@@ -29,12 +29,19 @@ class _SignInState extends State<SignIn> {
             Container(
               height: MediaQuery.of(context).size.height * 0.4,
               decoration: BoxDecoration(
-                color: Colors.blueAccent,
+                image: DecorationImage(
+                  image: AssetImage('assets/svgs/doctor_face.png'), // Remplacez 'assets/background_image.jpg' par le chemin de votre image
+                  fit: BoxFit.cover,
+                ),
               ),
               child: Center(
-                child: Image.asset(
-                  'assets/vector-doc2.jpg',
-                  scale: 3.5,
+                child: Text(
+                  'Welcome',
+                  style: GoogleFonts.poppins(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

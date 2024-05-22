@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -18,6 +19,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class DrawingCanvas extends HookWidget {
   final double height;
   final double width;
+
   final ValueNotifier<Color> selectedColor;
   final ValueNotifier<double> strokeSize;
   final ValueNotifier<Image?> backgroundImage;
@@ -29,6 +31,7 @@ class DrawingCanvas extends HookWidget {
   final GlobalKey canvasGlobalKey;
   final ValueNotifier<int> polygonSides;
   final ValueNotifier<bool> filled;
+
 
   const DrawingCanvas({
     Key? key,
@@ -49,6 +52,7 @@ class DrawingCanvas extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return MouseRegion(
       cursor: SystemMouseCursors.precise,
       child: Stack(
@@ -67,6 +71,15 @@ class DrawingCanvas extends HookWidget {
       ),
     );
   }
+
+Future<void> speak(String message) async {
+    FlutterTts flutterTts = FlutterTts();
+  await flutterTts.setLanguage("en-US"); // Utilisation de la langue anglaise
+  await flutterTts.setPitch(1.0);
+  await flutterTts.setSpeechRate(1.0);
+  await flutterTts.setVolume(1.0);
+  await flutterTts.speak(message);
+}
 
   void sendCoordinatesToServerOnClick(BuildContext context) {
     List<double> xCoordinates = [];
@@ -120,7 +133,7 @@ List<String> directions = detectDirection(xCoordinates.cast<int>(),yCoordinates.
 
 static String ArrowMessageGenerator(List<Arrow> arrowsData) {
   // Suppression des flèches avec une taille inférieure à 5
-  arrowsData.removeWhere((arrow) => arrow.size < 5);
+  arrowsData.removeWhere((arrow) => arrow.size < 10);
 
   String message = 'First, ';
 
@@ -384,6 +397,14 @@ void showArrowDialog(BuildContext context, List<Arrow> arrows, String direction)
           ],
         ),
         actions: <Widget>[
+          // Ajouter un espace entre la description et les flèches
+                GestureDetector(
+                  onTap: () {
+                    speak(direction); // Appeler la fonction de lecture vocale
+                  },
+                  child: Icon(Icons.volume_up), // Icône pour la lecture vocale
+                ),
+                 SizedBox(width: 16.0), 
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
@@ -427,7 +448,7 @@ Future<List<String>?> showPatientsListDialog(BuildContext context , List<Arrow> 
         return StatefulBuilder(
           builder: (BuildContext context, setState) {
             return AlertDialog(
-              title: Text('Sélectionnez des patients'),
+              title: Text('Select patients.'),
               content: SingleChildScrollView(
                 child: Column(
                   children: patients.map((String patient) {
@@ -457,7 +478,7 @@ Future<List<String>?> showPatientsListDialog(BuildContext context , List<Arrow> 
                     saveData(arrows, direction);
                      ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Données sauvegardées avec succès'),
+                        content: Text('Data saved successfully'),
                       ),
                     );
                     Navigator.pop(context);
@@ -595,6 +616,8 @@ class Arrow {
   final String direction;
 
   Arrow({required this.size, required this.direction});
+
+  
 }
 class SketchPainter extends CustomPainter {
   final List<Sketch> sketches;

@@ -91,12 +91,7 @@ class _AppointmentHistoryListState extends State<AppointmentHistoryList> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // doctor name
-                                Text(
-                                  '${index + 1}. ${isDoctor ? '${document['patientName']}' : '${document['doctorName']}'}',
-                                  style: GoogleFonts.lato(
-                                    fontSize: 15,
-                                  ),
-                                ),
+                          
                                 // date
                                 Text(
                                   _dateFormatter(

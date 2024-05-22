@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_drawing_board/screen/AddNewExercisePage.dart';
+import 'package:flutter_drawing_board/screen/PatientProgressPage.dart';
 import 'package:flutter_drawing_board/screens/patient/doctor_list.dart';
 import 'package:flutter_drawing_board/screens/patient/home_page.dart';
 import 'package:flutter_drawing_board/view/drawing_page.dart';
@@ -25,7 +26,7 @@ class _MainPageDoctorState extends State<MainPageDoctor> {
     const Appointments(),
        HomePage(),
     AddNewExercisePage(),
-    const Appointments(),
+    PatientProgressPage(),
     const MyProfile(),
   ];
 

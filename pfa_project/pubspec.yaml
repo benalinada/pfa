@@ -37,6 +37,7 @@ dependencies:
   firebase_storage: ^11.6.10
   flutter:
     sdk: flutter
+  flutter_tts: ^3.2.1 
   fluttericon: ^2.0.0
   google_fonts: ^6.2.1
   google_nav_bar: ^5.0.6
