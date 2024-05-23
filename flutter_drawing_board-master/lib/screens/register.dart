@@ -215,7 +215,9 @@ class _RegisterState extends State<Register> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.all(0), backgroundColor: type == 0 ? Colors.grey[350] : null,
+                              padding: const EdgeInsets.all(0),
+                              backgroundColor:
+                                  type == 0 ? Colors.grey[350] : null,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(32.0),
                                 side: BorderSide(
@@ -235,7 +237,7 @@ class _RegisterState extends State<Register> {
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  "Doctor",
+                                  "Coach ",
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.lato(
                                     fontSize: 18.0,
@@ -261,7 +263,9 @@ class _RegisterState extends State<Register> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.all(0), backgroundColor: type == 1 ? Colors.grey[350] : null,
+                              padding: const EdgeInsets.all(0),
+                              backgroundColor:
+                                  type == 1 ? Colors.grey[350] : null,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(32.0),
                                 side: BorderSide(
@@ -338,8 +342,7 @@ class _RegisterState extends State<Register> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () =>
-                                _pushPage(context, const SignIn()),
+                            onPressed: () => _pushPage(context, const SignIn()),
                             child: Text(
                               'Sign in',
                               style: GoogleFonts.lato(
@@ -477,9 +480,13 @@ class _RegisterState extends State<Register> {
         globals.isDoctor = true;
       }
 
-      FirebaseFirestore.instance.collection(accountType).doc(user.uid).set(userData);
+      FirebaseFirestore.instance
+          .collection(accountType)
+          .doc(user.uid)
+          .set(userData);
 
-      Navigator.of(context).pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
     }
   }
 

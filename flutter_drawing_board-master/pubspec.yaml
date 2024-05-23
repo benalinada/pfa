@@ -27,41 +27,40 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  carousel_slider: ^4.1.1
-  cloud_firestore: ^4.15.9
-  cupertino_icons: ^1.0.2
-  file_picker: ^8.0.0+1
-  firebase_auth: ^4.17.9
-  firebase_core: ^2.27.1
-  firebase_database: ^10.4.10
-  firebase_storage: ^11.6.10
+  carousel_slider: 
+  cloud_firestore: 
+  cupertino_icons:
+  file_picker: 
+  firebase_auth:
+  firebase_core: 
+  firebase_database: 
+  firebase_storage: 
   flutter:
     sdk: flutter
-  flutter_tts: ^3.2.1 
-  fluttericon: ^2.0.0
+  flutter_tts: 
+  fluttericon: 
   google_fonts: ^6.2.1
-  google_nav_bar: ^5.0.6
-  icon: ^2.2.1
-  image_picker: ^1.0.7
-  intl: ^0.19.0
-  introduction_screen: ^3.0.2
-  shared_preferences: ^2.0.15
-  status_alert: ^1.0.1
-  tabler_icons: ^2.5.0+1
-  typicons_flutter: ^0.5.0
-  flutter_colorpicker: ^1.0.3
-  flutter_hooks: ^0.18.5+1
-  flutter_svg: ^2.0.9
-  file_saver: ^0.2.9
-  font_awesome_flutter: ^10.6.0
-  url_launcher: ^6.2.1
-  universal_html: ^2.2.4
-  rflutter_alert: ^2.0.7
-  http: ^1.1.0
-
+  google_nav_bar:
+  icon: 
+  image_picker: 
+  intl: 
+  introduction_screen: 
+  shared_preferences: 
+  status_alert:
+  tabler_icons: 
+  typicons_flutter: 
+  flutter_colorpicker: 
+  flutter_hooks: 
+  flutter_svg: 
+  file_saver: 
+  font_awesome_flutter: 
+  url_launcher: 
+  universal_html: 
+  rflutter_alert: 
+  http: 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
-  flutter_lints: ^3.0.1
+  flutter_launcher_icons: 
+  flutter_lints: 
   flutter_test:
     sdk: flutter
 

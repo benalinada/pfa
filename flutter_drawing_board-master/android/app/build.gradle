@@ -23,9 +23,11 @@ if (flutterVersionName == null) {
 }
 
 android {
+
     namespace "com.jideguru.flutter_drawing_board"
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
